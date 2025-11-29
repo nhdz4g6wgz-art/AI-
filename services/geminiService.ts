@@ -19,8 +19,12 @@ const getAiClient = () => {
   }
 
   if (!apiKey) {
-    throw new Error("API Key 缺失。请在代码 services/geminiService.ts 中填入 HARDCODED_API_KEY，或者在部署设置中配置 API_KEY 环境变量。");
+    throw new Error("API Key 缺失。请在 code services/geminiService.ts 中填入 HARDCODED_API_KEY。");
   }
+  
+  // DEBUG: 打印 Key 的前 4 位，帮助用户确认是否更新成功
+  console.log(`[Gemini Service] Using API Key starting with: ${apiKey.substring(0, 4)}...`);
+
   return new GoogleGenAI({ apiKey });
 };
 
@@ -31,8 +35,8 @@ const MODEL_NAME = 'gemini-2.5-flash-image';
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // 核心重试逻辑：指数退避
-// 默认重试 3 次，初始延迟 2 秒 (2s -> 4s -> 8s)
-async function retryOperation<T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
+// 默认重试 3 次，初始延迟 3 秒 (3s -> 6s -> 12s)
+async function retryOperation<T>(operation: () => Promise<T>, retries = 3, delay = 3000): Promise<T> {
   try {
     return await operation();
   } catch (error: any) {
@@ -43,7 +47,7 @@ async function retryOperation<T>(operation: () => Promise<T>, retries = 3, delay
     const isOverloaded = msg.includes('503') || msg.includes('Overloaded');
 
     if (retries > 0 && (isRateLimit || isOverloaded)) {
-      console.warn(`API 请求受限或繁忙，正在尝试自动重连... 剩余重试次数: ${retries}。等待 ${delay}ms`);
+      console.warn(`[Gemini] API 请求繁忙 (${isRateLimit ? '429 Rate Limit' : '503 Overloaded'})，正在尝试自动重连... 剩余重试次数: ${retries}。等待 ${delay}ms`);
       await wait(delay);
       return retryOperation(operation, retries - 1, delay * 2);
     }
@@ -58,14 +62,15 @@ const handleGeminiError = (error: any): never => {
   console.error("Gemini API Error (Final):", msg);
 
   if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Quota exceeded')) {
-    throw new Error("今日免费额度已耗尽，或请求过于频繁。程序已自动重试多次但失败。建议更换 API Key 或明日再试。");
+    // 不再假设是免费额度，可能是付费版的瞬时并发限制
+    throw new Error("API 请求过于频繁 (Rate Limit) 或配额不足。系统已自动重试多次但失败，请稍后（约1分钟）再试。");
   }
   
   if (msg.includes('503') || msg.includes('Overloaded')) {
-    throw new Error("模型服务当前繁忙，请稍后重试。");
+    throw new Error("Google 模型服务当前过载 (Overloaded)，请稍后重试。");
   }
 
-  throw new Error(error.message || "生成失败，请检查网络连接。");
+  throw new Error(error.message || "生成失败，请检查网络或 Key 配置。");
 };
 
 export const generateClothes = async (prompt: string): Promise<string> => {
