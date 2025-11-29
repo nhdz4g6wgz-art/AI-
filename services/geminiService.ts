@@ -2,9 +2,17 @@ import { GoogleGenAI } from "@google/genai";
 import { stripBase64Prefix } from '../utils';
 
 const getAiClient = () => {
-  const apiKey = process.env.API_KEY;
+  let apiKey = '';
+  try {
+    // Safely access process.env.API_KEY
+    // In some browser builds, 'process' might not be defined if not replaced by the bundler.
+    apiKey = process.env.API_KEY;
+  } catch (e) {
+    console.warn("process.env.API_KEY access failed", e);
+  }
+
   if (!apiKey) {
-    throw new Error("API Key is missing");
+    throw new Error("API Key is missing. Please check your environment variables.");
   }
   return new GoogleGenAI({ apiKey });
 };
