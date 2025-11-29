@@ -1,21 +1,26 @@
 import { GoogleGenAI } from "@google/genai";
 import { stripBase64Prefix } from '../utils';
 
+// TODO: 在这里直接填入您的 API Key 进行测试
+// 例如: const HARDCODED_API_KEY = "AIzaSy...";
+const HARDCODED_API_KEY = "AIzaSyDI-S7ThETC774Jw294Wn8FInGh3eiyvRc";
+
 const getAiClient = () => {
-  let apiKey = '';
-  try {
-    // Safely access process.env.API_KEY
-    // Note: In Vite/Netlify, ensure 'API_KEY' is set in your environment variables.
-    // We access it safely to avoid crashing if 'process' is undefined.
-    if (typeof process !== 'undefined' && process.env) {
-        apiKey = process.env.API_KEY || '';
+  let apiKey = HARDCODED_API_KEY;
+
+  // 如果硬编码为空，尝试从环境变量获取
+  if (!apiKey) {
+    try {
+      if (typeof process !== 'undefined' && process.env) {
+          apiKey = process.env.API_KEY || '';
+      }
+    } catch (e) {
+      console.warn("process.env access failed", e);
     }
-  } catch (e) {
-    console.warn("process.env access failed", e);
   }
 
   if (!apiKey) {
-    throw new Error("API Key is missing. Please set the 'API_KEY' environment variable in your deployment settings (e.g., Netlify Environment Variables).");
+    throw new Error("API Key 缺失。请在代码 services/geminiService.ts 中填入 HARDCODED_API_KEY，或者在部署设置中配置 API_KEY 环境变量。");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -97,7 +102,7 @@ export const generateTryOn = async (personBase64: string, clothBase64: string): 
       }
     }
 
-    throw new Error("Failed to generate try-on image.");
+    throw new Error("未能生成试穿图片，请重试。");
   } catch (error: any) {
     console.error("Generate Try-On Error:", error);
     // Propagate the specific error message (e.g., API Key missing)

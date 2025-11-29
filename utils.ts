@@ -24,7 +24,7 @@ export const urlToBase64 = async (url: string): Promise<string> => {
     // We return the URL itself if we can't convert, but the API call will fail if it's not base64.
     // In a real app, use a backend proxy.
     // For this specific demo, we will attempt to return a placeholder or throw.
-    throw new Error("Unable to load image due to cross-origin restrictions. Please upload a local file.");
+    throw new Error("无法加载预设图片（跨域限制）。建议您点击上传按钮使用本地图片进行测试。");
   }
 };
 
