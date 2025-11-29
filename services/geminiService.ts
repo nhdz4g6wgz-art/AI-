@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { stripBase64Prefix } from '../utils';
 
 // TODO: 在这里直接填入您的 API Key 进行测试
-const HARDCODED_API_KEY = "AIzaSyDI-S7ThETC774Jw294Wn8FInGh3eiyvRc";
+const HARDCODED_API_KEY = "AIzaSyDa_JpomxCEfLz-HSy5Gx8sCN1Wa79sUtc";
 
 const getAiClient = () => {
   let apiKey = HARDCODED_API_KEY;
