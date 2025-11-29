@@ -1,0 +1,5 @@
+{
+  "name": "Copy of NanoStyle AI 换装",
+  "description": "基于 Gemini Nano Banana 模型的智能换装应用，支持自定义人脸与服装生成。",
+  "requestFramePermissions": []
+}
