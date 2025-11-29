@@ -28,6 +28,21 @@ const getAiClient = () => {
 // Use 'gemini-2.5-flash-image' as mapped from "Nano Banana"
 const MODEL_NAME = 'gemini-2.5-flash-image';
 
+const handleGeminiError = (error: any): never => {
+  const msg = error.message || JSON.stringify(error);
+  console.error("Gemini API Error:", msg);
+
+  if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('Quota exceeded')) {
+    throw new Error("API 调用太快了（触发生图模型免费版限制）。请休息 1 分钟后再试。");
+  }
+  
+  if (msg.includes('503') || msg.includes('Overloaded')) {
+    throw new Error("模型服务当前繁忙，请稍后重试。");
+  }
+
+  throw new Error(error.message || "生成失败，请检查网络连接。");
+};
+
 export const generateClothes = async (prompt: string): Promise<string> => {
   try {
     const ai = getAiClient();
@@ -55,8 +70,8 @@ export const generateClothes = async (prompt: string): Promise<string> => {
     
     throw new Error("模型未生成图片，请重试或修改提示词。");
   } catch (error: any) {
-    console.error("Generate Clothes Error:", error);
-    throw new Error(error.message || "生成衣服失败");
+    handleGeminiError(error);
+    return ""; // Unreachable but satisfies TS
   }
 };
 
@@ -104,8 +119,7 @@ export const generateTryOn = async (personBase64: string, clothBase64: string): 
 
     throw new Error("未能生成试穿图片，请重试。");
   } catch (error: any) {
-    console.error("Generate Try-On Error:", error);
-    // Propagate the specific error message (e.g., API Key missing)
-    throw new Error(error.message || "试穿生成失败");
+    handleGeminiError(error);
+    return ""; // Unreachable
   }
 };
