@@ -24,6 +24,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   const [mode, setMode] = useState<'select' | 'generate'>('select');
   const [prompt, setPrompt] = useState('');
   const [genState, setGenState] = useState<LoadingState>('idle');
+  const [genError, setGenError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +44,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setGenState('loading');
+    setGenError('');
     try {
       const base64 = await generateClothes(prompt);
       const newAsset: ImageAsset = {
@@ -55,9 +57,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
       onSelect(newAsset);
       setGenState('success');
       setMode('select'); // Switch back to view selection
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setGenState('error');
+      setGenError(error.message || "生成失败");
     }
   };
 
@@ -177,7 +180,9 @@ const StepTwo: React.FC<StepTwoProps> = ({
                   ) : '开始生成'}
                 </button>
                 
-                {genState === 'error' && <p className="text-red-500 text-xs mt-2 text-center">生成失败，请重试。</p>}
+                {genState === 'error' && (
+                  <p className="text-red-500 text-xs mt-2 text-center break-words">{genError || "生成失败，请重试。"}</p>
+                )}
             </div>
             
             <p className="mt-8 text-xs text-gray-400 max-w-xs text-center">

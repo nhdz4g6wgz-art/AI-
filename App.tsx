@@ -21,6 +21,7 @@ const App: React.FC = () => {
   // Result State
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [genStatus, setGenStatus] = useState<LoadingState>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   
   // History
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -39,6 +40,7 @@ const App: React.FC = () => {
     } else if (step === AppStep.GENERATE_RESULT) {
       setStep(AppStep.SELECT_CLOTHES);
       setGenStatus('idle'); // Reset status if backing out of result
+      setErrorMessage('');
     }
   };
 
@@ -48,12 +50,15 @@ const App: React.FC = () => {
     setSelectedCloth(null);
     setResultImg(null);
     setGenStatus('idle');
+    setErrorMessage('');
   };
 
   const executeTryOn = useCallback(async () => {
     if (!selectedPerson || !selectedCloth) return;
 
     setGenStatus('loading');
+    setErrorMessage('');
+    
     try {
       // Ensure we have base64 for both
       let personB64 = selectedPerson.base64;
@@ -81,9 +86,10 @@ const App: React.FC = () => {
       };
       setHistory(prev => [newItem, ...prev]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Try On Error:", error);
       setGenStatus('error');
+      setErrorMessage(error.message || "生成失败，请稍后重试。");
     }
   }, [selectedPerson, selectedCloth]);
 
@@ -135,6 +141,7 @@ const App: React.FC = () => {
                     onRestart={handleRestart}
                     onGenerate={executeTryOn}
                     status={genStatus}
+                    errorMessage={errorMessage}
                     resultImg={resultImg}
                 />
             )}

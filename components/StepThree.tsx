@@ -6,6 +6,7 @@ interface StepThreeProps {
   onRestart: () => void;
   onGenerate: () => void;
   status: LoadingState;
+  errorMessage?: string;
   resultImg?: string | null;
 }
 
@@ -14,6 +15,7 @@ const StepThree: React.FC<StepThreeProps> = ({
   onRestart, 
   onGenerate, 
   status, 
+  errorMessage,
   resultImg 
 }) => {
   
@@ -52,16 +54,19 @@ const StepThree: React.FC<StepThreeProps> = ({
            )}
 
            {status === 'error' && (
-               <div className="text-center space-y-4">
+               <div className="text-center space-y-4 w-full px-6">
                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                    </div>
-                   <p className="text-gray-800 font-medium">出错了</p>
+                   <p className="text-gray-800 font-bold">出错了</p>
+                   <div className="bg-red-50 border border-red-100 p-3 rounded-lg text-red-600 text-xs text-left overflow-auto max-h-32 w-full break-words">
+                       {errorMessage || "未知错误"}
+                   </div>
                    <button 
                      onClick={onGenerate}
-                     className="px-6 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800"
+                     className="px-6 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 mt-2"
                    >
                        重试
                    </button>
